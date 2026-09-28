@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${mode == 'found' ? 'Pratinjau Konfirmasi Temuan' : 'Pratinjau Klaim'} + ' - CampusFound'">Pratinjau - CampusFound</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --blue: #126bfa; --ink: #182335; --muted: #657286; --line: #e0e7f0; }
+        body { min-height: 100vh; margin: 0; background: linear-gradient(145deg, #eaf1ff, #f7f9fc 55%, #e6f4f1); color: var(--ink); font-family: 'Inter', sans-serif; }
+        .topbar { min-height: 72px; padding: 16px max(20px, calc((100% - 1080px) / 2)); background: #fff; border-bottom: 1px solid var(--line); }
+        .brand { color: var(--blue); font: 800 1.25rem 'Outfit', sans-serif; text-decoration: none; }
+        .page { width: min(100% - 32px, 820px); margin: 44px auto; }
+        .eyebrow { color: var(--blue); font-size: .78rem; font-weight: 800; letter-spacing: 0; text-transform: uppercase; }
+        h1, h2 { font-family: 'Outfit', sans-serif; letter-spacing: 0; }
+        .preview-panel { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: 0 18px 44px rgba(31, 54, 87, .1); }
+        .preview-head { padding: 28px 32px; border-bottom: 1px solid var(--line); }
+        .preview-body { padding: 28px 32px; }
+        .item-summary { padding: 22px; border: 1px solid var(--line); border-radius: 10px; background: #f8fafc; }
+        .item-name { font: 700 1.25rem 'Outfit', sans-serif; }
+        .meta-label { margin-bottom: 4px; color: var(--muted); font-size: .78rem; font-weight: 700; }
+        .description { padding: 16px 18px; border-left: 3px solid var(--blue); background: #f0f6ff; line-height: 1.65; }
+        .next-step { padding: 18px 20px; border: 1px solid var(--line); border-radius: 10px; }
+        .btn-primary { background: var(--blue); border-color: var(--blue); }
+        @media (max-width: 575px) { .page { margin: 24px auto; } .preview-head, .preview-body { padding: 22px 18px; } }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">CampusFound</a>
+    </header>
+
+    <main class="page">
+        <a href="/" class="small text-decoration-none text-secondary"><i class="bi bi-arrow-left me-1"></i>Kembali ke daftar barang</a>
+
+        <section class="preview-panel mt-3">
+            <div class="preview-head">
+                <div class="eyebrow mb-2">Pratinjau tindakan</div>
+                <h1 class="h2 fw-bold mb-2" th:text="${mode == 'found' ? 'Saya Menemukan Barang Ini' : 'Ajukan Klaim Kepemilikan'}">Ajukan Klaim Kepemilikan</h1>
+                <p class="text-secondary mb-0" th:text="${mode == 'found' ? 'Periksa informasi barang yang akan Anda laporkan telah ditemukan.' : 'Pastikan barang yang dipilih sesuai sebelum mengajukan klaim.'}">Periksa informasi barang yang dipilih.</p>
+            </div>
+
+            <div class="preview-body">
+                <div class="item-summary">
+                    <div class="d-flex flex-wrap align-items-center gap-2 mb-2">
+                        <span class="badge rounded-pill" th:classappend="${mode == 'found' ? 'text-bg-danger' : 'text-bg-success'}" th:text="${itemStatus}">Status</span>
+                        <span class="small text-secondary" th:text="${itemId}">ID Barang</span>
+                        <span class="small text-secondary">|</span>
+                        <span class="small text-secondary" th:text="${itemCategory}">Kategori</span>
+                    </div>
+                    <h2 class="item-name mb-3" th:text="${itemTitle}">Nama Barang</h2>
+
+                    <div class="row g-3 mb-3">
+                        <div class="col-sm-6">
+                            <div class="meta-label"><i class="bi bi-geo-alt-fill text-danger me-1"></i>Lokasi</div>
+                            <div th:text="${itemLocation}">Lokasi barang</div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="meta-label"><i class="bi bi-clock-fill text-primary me-1"></i>Waktu laporan</div>
+                            <div th:text="${itemTime}">Waktu laporan</div>
+                        </div>
+                        <div class="col-12">
+                            <div class="meta-label"><i class="bi bi-person-fill text-info me-1"></i>Pelapor</div>
+                            <div th:text="${itemReporter}">Nama pelapor</div>
+                        </div>
+                    </div>
+
+                    <div class="description" th:text="${itemDescription}">Deskripsi barang</div>
+                </div>
+
+                <div class="next-step mt-4" th:if="${mode == 'found'}">
+                    <h2 class="h6 fw-bold mb-2"><i class="bi bi-info-circle text-primary me-2"></i>Langkah berikutnya</h2>
+                    <p class="text-secondary mb-0">Sampaikan lokasi dan waktu Anda menemukan barang, lalu berikan cara yang aman bagi pelapor untuk menghubungi Anda.</p>
+                </div>
+                <div class="next-step mt-4" th:if="${mode == 'claim'}">
+                    <h2 class="h6 fw-bold mb-2"><i class="bi bi-shield-check text-primary me-2"></i>Siapkan bukti kepemilikan</h2>
+                    <p class="text-secondary mb-0">Pada proses klaim, jelaskan ciri khusus barang yang tidak tercantum pada laporan dan siapkan identitas resmi untuk verifikasi petugas.</p>
+                </div>
+
+                <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-3 mt-4">
+                    <p class="small text-secondary mb-0">Kontak pribadi tetap tersembunyi. Chat berikut hanya simulasi.</p>
+                    <a th:href="@{/chat-demo(mode=${mode},itemId=${itemId},itemTitle=${itemTitle},itemLocation=${itemLocation})}" class="btn btn-primary rounded-pill px-4 fw-semibold text-nowrap"><i class="bi bi-chat-dots me-1"></i>Buka Simulasi Chat</a>
+                </div>
+            </div>
+        </section>
+    </main>
+</body>
+
+</html>

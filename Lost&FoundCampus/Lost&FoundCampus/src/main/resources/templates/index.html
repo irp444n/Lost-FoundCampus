@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Lost & Found Campus</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;600;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        h1, h2, h3, h4, h5, h6, .navbar-brand {
+            font-family: 'Outfit', sans-serif;
+        }
+        /* Glassmorphism Navbar */
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(0,0,0,0.05);
+        }
+        /* Hero Section */
+        .hero-section {
+            padding: 100px 0 60px;
+            text-align: center;
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            margin-bottom: 40px;
+        }
+        .hero-title {
+            font-weight: 800;
+            font-size: 3.5rem;
+            color: #0d6efd;
+            margin-bottom: 20px;
+        }
+        .search-box {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 8px;
+            border-radius: 50px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
+        }
+        .search-box input {
+            border: none;
+            box-shadow: none !important;
+            padding-left: 20px;
+        }
+        .search-box .btn {
+            border-radius: 40px;
+            padding: 10px 30px;
+            font-weight: 600;
+        }
+        /* Item Cards */
+        .item-card {
+            border: 1px solid rgba(0,0,0,0.06);
+            border-radius: 20px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+            transition: all 0.3s cubic-bezier(0.165, 0.84, 0.44, 1);
+            overflow: hidden;
+            background: white;
+            height: 100%;
+            cursor: pointer;
+            position: relative;
+        }
+        .item-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 32px rgba(13, 110, 253, 0.12);
+            border-color: rgba(13, 110, 253, 0.35);
+        }
+        .card-img-placeholder {
+            height: 200px;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            font-size: 3.2rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .item-card:hover .card-img-placeholder {
+            background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+            color: #0d6efd;
+        }
+        .card-hover-hint {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(15, 23, 42, 0.8), transparent);
+            color: white;
+            font-size: 0.78rem;
+            padding: 22px 10px 8px;
+            text-align: center;
+            font-weight: 500;
+            opacity: 0;
+            transform: translateY(8px);
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .item-card:hover .card-hover-hint {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .badge-status {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.12);
+            z-index: 2;
+        }
+        .badge-hilang {
+            background: rgba(220, 53, 69, 0.95);
+            color: white;
+        }
+        .badge-temuan {
+            background: rgba(25, 135, 84, 0.95);
+            color: white;
+        }
+        /* Tabs */
+        .nav-pills .nav-link {
+            border-radius: 30px;
+            padding: 10px 25px;
+            font-weight: 600;
+            color: #495057;
+            transition: all 0.2s ease;
+        }
+        .nav-pills .nav-link.active {
+            background-color: #0d6efd;
+            box-shadow: 0 4px 10px rgba(13, 110, 253, 0.3);
+        }
+        /* Modal Info Box */
+        .modal-info-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+        .modal-desc-box {
+            background: #f0f7ff;
+            border: 1.5px dashed #93c5fd;
+            border-radius: 16px;
+            padding: 18px 20px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg fixed-top navbar-glass">
+        <div class="container">
+            <a class="navbar-brand fw-bold text-primary d-flex align-items-center gap-2" href="/">
+                <div class="bg-primary text-white rounded-3 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; font-size: 1.2rem;">
+                    LF
+                </div>
+                CampusFound
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav align-items-center gap-3">
+                    <li class="nav-item">
+                        <a class="nav-link active fw-semibold text-primary" href="/">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="/lapor">Buat Laporan</a>
+                    </li>
+                    <li class="nav-item d-none d-lg-block">
+                        <div class="vr h-100 mx-2"></div>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link fw-semibold" href="/login">Masuk</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="btn btn-dark rounded-pill px-4 fw-semibold" href="/register">Daftar</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container">
+            <h1 class="hero-title">Temukan Barangmu,<br>Bantu Sesama.</h1>
+            <p class="lead text-secondary mb-5 max-w-75 mx-auto">Pusat informasi barang hilang dan ditemukan di lingkungan kampus. Cepat, transparan, dan terpusat.</p>
+            
+            <div class="search-box d-flex">
+                <span class="d-flex align-items-center ps-3 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control form-control-lg" placeholder="Cari dompet, KTM, laptop...">
+                <button class="btn btn-primary btn-lg">Cari Barang</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <div class="container mb-5 pb-5">
+        
+        <!-- Tabs & Filters -->
+        <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4 gap-3">
+            <ul class="nav nav-pills bg-white p-1 rounded-pill shadow-sm" id="reportTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="hilang-tab" data-bs-toggle="pill" data-bs-target="#hilang" type="button" role="tab">Laporan Kehilangan</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="temuan-tab" data-bs-toggle="pill" data-bs-target="#temuan" type="button" role="tab">Laporan Penemuan</button>
+                </li>
+            </ul>
+            
+            <div class="d-flex gap-2 w-100" style="max-width: 400px;">
+                <select class="form-select rounded-pill border-0 shadow-sm">
+                    <option selected>Semua Kategori</option>
+                    <option value="1">Elektronik</option>
+                    <option value="2">Dokumen</option>
+                </select>
+                <select class="form-select rounded-pill border-0 shadow-sm">
+                    <option selected>Semua Lokasi</option>
+                    <option value="1">GKU</option>
+                    <option value="2">Perpustakaan</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content" id="reportTabsContent">
+            
+            <!-- Tab: Barang Hilang -->
+            <div class="tab-pane fade show active" id="hilang" role="tabpanel">
+                <div class="row g-4" id="hilangCardsContainer">
+                    
+                    <!-- Card 1: Dompet Kulit Coklat -->
+                    <div class="col-md-6 col-lg-3 card-item-col" data-category="Aksesoris" data-location="Kantin">
+                        <div class="card item-card"
+                             role="button"
+                             tabindex="0"
+                             onclick="openDetailModal(this)"
+                             data-id="LH-2026-001"
+                             data-type="HILANG"
+                             data-type-class="badge-hilang"
+                             data-category="Aksesoris / Dompet"
+                             data-title="Dompet Kulit Coklat"
+                             data-icon="bi-wallet2"
+                             data-location="Kantin Pusat Lt. 1, Meja 12"
+                             data-time="2 jam yang lalu (Senin, 10:30 WIB)"
+                             data-status="Mencari"
+                             data-status-class="bg-warning text-dark"
+                             data-reporter="Budi Santoso (Teknik Informatika)"
+                             data-contact="0812-3456-7890"
+                             data-description="Dompet lipat kulit warna coklat gelap merek Braun Buffel. Di dalamnya terdapat KTP, SIM C, kartu ATM BCA, serta uang tunai secukupnya. Terdapat sedikit goresan kecil di sudut kanan belakang dompet.">
+                            <div class="card-img-placeholder">
+                                <i class="bi bi-wallet2"></i>
+                                <span class="badge-status badge-hilang">HILANG</span>
+                                <div class="card-hover-hint">
+                                    <i class="bi bi-eye-fill"></i> Klik untuk melihat deskripsi
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold text-truncate mb-1">Dompet Kulit Coklat</h5>
+                                <p class="card-text text-muted small mb-3">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i> Kantin Pusat Lt. 1
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>2 jam yang lalu</span>
+                                    <span class="badge bg-warning text-dark rounded-pill">Mencari</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Card 2: Laptop Asus ROG -->
+                    <div class="col-md-6 col-lg-3 card-item-col" data-category="Elektronik" data-location="Perpustakaan">
+                        <div class="card item-card"
+                             role="button"
+                             tabindex="0"
+                             onclick="openDetailModal(this)"
+                             data-id="LH-2026-002"
+                             data-type="HILANG"
+                             data-type-class="badge-hilang"
+                             data-category="Elektronik"
+                             data-title="Laptop Asus ROG"
+                             data-icon="bi-laptop"
+                             data-location="Perpustakaan Pusat Lt. 2 (Area Meja Belajar)"
+                             data-time="Kemarin (Minggu, 16:45 WIB)"
+                             data-status="Mencari"
+                             data-status-class="bg-warning text-dark"
+                             data-reporter="Dimas Aditya (Sistem Informasi)"
+                             data-contact="0821-9876-5432"
+                             data-description="Laptop gaming Asus ROG Zephyrus warna abu-abu gelap dengan stiker GitHub dan VS Code di bagian cover belakang. Tertinggal di dalam tas laptop warna hitam bersama charger dan mouse wireless Logitech.">
+                            <div class="card-img-placeholder">
+                                <i class="bi bi-laptop"></i>
+                                <span class="badge-status badge-hilang">HILANG</span>
+                                <div class="card-hover-hint">
+                                    <i class="bi bi-eye-fill"></i> Klik untuk melihat deskripsi
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold text-truncate mb-1">Laptop Asus ROG</h5>
+                                <p class="card-text text-muted small mb-3">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i> Perpustakaan Lt. 2
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>Kemarin</span>
+                                    <span class="badge bg-warning text-dark rounded-pill">Mencari</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 3: Kunci Motor Honda Vario -->
+                    <div class="col-md-6 col-lg-3 card-item-col" data-category="Aksesoris" data-location="GKU">
+                        <div class="card item-card"
+                             role="button"
+                             tabindex="0"
+                             onclick="openDetailModal(this)"
+                             data-id="LH-2026-003"
+                             data-type="HILANG"
+                             data-type-class="badge-hilang"
+                             data-category="Kunci & Kendaraan"
+                             data-title="Kunci Motor Honda"
+                             data-icon="bi-key"
+                             data-location="Parkiran Depan Gedung Kuliah Umum (GKU)"
+                             data-time="3 jam yang lalu"
+                             data-status="Mencari"
+                             data-status-class="bg-warning text-dark"
+                             data-reporter="Andi Wijaya (Teknik Elektro)"
+                             data-contact="0857-1122-3344"
+                             data-description="Kunci kontak motor Honda Vario dengan remote smart key warna hitam. Memiliki gantungan kunci karet karakter anime One Piece (Luffy) dan pita kain bertuliskan 'Safety First'.">
+                            <div class="card-img-placeholder">
+                                <i class="bi bi-key"></i>
+                                <span class="badge-status badge-hilang">HILANG</span>
+                                <div class="card-hover-hint">
+                                    <i class="bi bi-eye-fill"></i> Klik untuk melihat deskripsi
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold text-truncate mb-1">Kunci Motor Honda</h5>
+                                <p class="card-text text-muted small mb-3">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i> Parkiran Depan GKU
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>3 jam yang lalu</span>
+                                    <span class="badge bg-warning text-dark rounded-pill">Mencari</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 4: Earphone Sony TWS -->
+                    <div class="col-md-6 col-lg-3 card-item-col" data-category="Elektronik" data-location="GKU">
+                        <div class="card item-card"
+                             role="button"
+                             tabindex="0"
+                             onclick="openDetailModal(this)"
+                             data-id="LH-2026-004"
+                             data-type="HILANG"
+                             data-type-class="badge-hilang"
+                             data-category="Elektronik"
+                             data-title="Earphone Sony TWS"
+                             data-icon="bi-headphones"
+                             data-location="Ruang Lab Komputer Lt. 3 GKU"
+                             data-time="Kemarin sore"
+                             data-status="Mencari"
+                             data-status-class="bg-warning text-dark"
+                             data-reporter="Nadia Putri (Desain Komunikasi Visual)"
+                             data-contact="0813-7788-9900"
+                             data-description="Charging case TWS Sony WF-1000XM4 warna hitam doff dengan casing silikon pelindung warna hijau tosca. Tertinggal di dekat komputer baris kedua lab sebelah kanan.">
+                            <div class="card-img-placeholder">
+                                <i class="bi bi-headphones"></i>
+                                <span class="badge-status badge-hilang">HILANG</span>
+                                <div class="card-hover-hint">
+                                    <i class="bi bi-eye-fill"></i> Klik untuk melihat deskripsi
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold text-truncate mb-1">Earphone Sony TWS</h5>
+                                <p class="card-text text-muted small mb-3">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i> Lab Komputer Lt. 3
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>Kemarin sore</span>
+                                    <span class="badge bg-warning text-dark rounded-pill">Mencari</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+            <!-- Tab: Barang Ditemukan -->
+            <div class="tab-pane fade" id="temuan" role="tabpanel">
+                <div class="row g-4" id="temuanCardsContainer">
+                    
+                    <!-- Card 5: KTM a.n Budi -->
+                    <div class="col-md-6 col-lg-3 card-item-col" data-category="Dokumen" data-location="GKU">
+                        <div class="card item-card"
+                             role="button"
+                             tabindex="0"
+                             onclick="openDetailModal(this)"
+                             data-id="LT-2026-001"
+                             data-type="DITEMUKAN"
+                             data-type-class="badge-temuan"
+                             data-category="Dokumen & Kartu"
+                             data-title="KTM a.n Budi Santoso"
+                             data-icon="bi-person-vcard"
+                             data-location="Gedung Kuliah Umum (GKU) Koridor Lt. 1"
+                             data-time="5 jam yang lalu (11:20 WIB)"
+                             data-status="Di Pos Satpam"
+                             data-status-class="bg-primary text-white"
+                             data-reporter="Pak Joko (Petugas Kebersihan Kampus)"
+                             data-contact="Pos Keamanan Gerbang Utama"
+                             data-description="Kartu Tanda Mahasiswa (KTM) aktif atas nama Budi Santoso, Program Studi S1 Teknik Informatika. Ditemukan terjatuh di lorong koridor dekat tangga lift gedung GKU. Barang sudah diserahkan ke pos satpam untuk verifikasi identitas pemilik.">
+                            <div class="card-img-placeholder">
+                                <i class="bi bi-person-vcard"></i>
+                                <span class="badge-status badge-temuan">DITEMUKAN</span>
+                                <div class="card-hover-hint">
+                                    <i class="bi bi-eye-fill"></i> Klik untuk melihat deskripsi
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold text-truncate mb-1">KTM a.n Budi</h5>
+                                <p class="card-text text-muted small mb-3">
+                                    <i class="bi bi-geo-alt-fill text-success me-1"></i> Gedung Kuliah Umum
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>5 jam yang lalu</span>
+                                    <span class="badge bg-primary rounded-pill">Di Pos Satpam</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 6: Botol Minum Corkcicle Biru -->
+                    <div class="col-md-6 col-lg-3 card-item-col" data-category="Perlengkapan" data-location="Perpustakaan">
+                        <div class="card item-card"
+                             role="button"
+                             tabindex="0"
+                             onclick="openDetailModal(this)"
+                             data-id="LT-2026-002"
+                             data-type="DITEMUKAN"
+                             data-type-class="badge-temuan"
+                             data-category="Perlengkapan Pribadi"
+                             data-title="Botol Minum Corkcicle"
+                             data-icon="bi-cup-straw"
+                             data-location="Gazebo Taman Dekat Perpustakaan"
+                             data-time="Tadi pagi (08:30 WIB)"
+                             data-status="Di Petugas"
+                             data-status-class="bg-primary text-white"
+                             data-reporter="Rina Maulida (Mahasiswi Farmasi)"
+                             data-contact="0819-0123-4567"
+                             data-description="Tumbler botol minum stainless merek Corkcicle ukuran 475ml warna biru tua matte (navy). Terdapat stiker quote motivasi warna putih di bagian samping dan sedikit dent kecil pada bagian bawah tutup.">
+                            <div class="card-img-placeholder">
+                                <i class="bi bi-cup-straw"></i>
+                                <span class="badge-status badge-temuan">DITEMUKAN</span>
+                                <div class="card-hover-hint">
+                                    <i class="bi bi-eye-fill"></i> Klik untuk melihat deskripsi
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold text-truncate mb-1">Botol Minum Corkcicle</h5>
+                                <p class="card-text text-muted small mb-3">
+                                    <i class="bi bi-geo-alt-fill text-success me-1"></i> Gazebo Perpustakaan
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>Tadi pagi</span>
+                                    <span class="badge bg-primary rounded-pill">Di Petugas</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 7: Jaket Almamater Kampus -->
+                    <div class="col-md-6 col-lg-3 card-item-col" data-category="Pakaian" data-location="GKU">
+                        <div class="card item-card"
+                             role="button"
+                             tabindex="0"
+                             onclick="openDetailModal(this)"
+                             data-id="LT-2026-003"
+                             data-type="DITEMUKAN"
+                             data-type-class="badge-temuan"
+                             data-category="Pakaian & Jaket"
+                             data-title="Jaket Almamater Kampus"
+                             data-icon="bi-shield-shaded"
+                             data-location="Auditorium Lantai 2 GKU"
+                             data-time="Kemarin malam"
+                             data-status="Di Pos Satpam"
+                             data-status-class="bg-primary text-white"
+                             data-reporter="Satpam Pos GKU (Pak Hendra)"
+                             data-contact="Pos Satpam GKU Lantai Dasar"
+                             data-description="Jaket jas almamater kampus warna biru tua size L. Tertinggal di kursi baris belakang auditorium usai kegiatan seminar. Di dalam saku kanan terdapat pulpen pilot hitam dan masker medis tertutup.">
+                            <div class="card-img-placeholder">
+                                <i class="bi bi-shield-shaded"></i>
+                                <span class="badge-status badge-temuan">DITEMUKAN</span>
+                                <div class="card-hover-hint">
+                                    <i class="bi bi-eye-fill"></i> Klik untuk melihat deskripsi
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold text-truncate mb-1">Jaket Almamater Kampus</h5>
+                                <p class="card-text text-muted small mb-3">
+                                    <i class="bi bi-geo-alt-fill text-success me-1"></i> Auditorium GKU
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>Kemarin</span>
+                                    <span class="badge bg-primary rounded-pill">Di Pos Satpam</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Card 8: Kacamata Minus Frame Hitam -->
+                    <div class="col-md-6 col-lg-3 card-item-col" data-category="Aksesoris" data-location="Kantin">
+                        <div class="card item-card"
+                             role="button"
+                             tabindex="0"
+                             onclick="openDetailModal(this)"
+                             data-id="LT-2026-004"
+                             data-type="DITEMUKAN"
+                             data-type-class="badge-temuan"
+                             data-category="Aksesoris"
+                             data-title="Kacamata Minus Frame Hitam"
+                             data-icon="bi-eyeglasses"
+                             data-location="Kantin Pusat, Meja Dekat Kasir Jus"
+                             data-time="Siang ini (12:15 WIB)"
+                             data-status="Di Kasir Kantin"
+                             data-status-class="bg-info text-dark"
+                             data-reporter="Ibu Kasir Kantin Jus Buah"
+                             data-contact="Stan Jus Kantin Pusat"
+                             data-description="Kacamata baca/minus dengan frame model bulat warna hitam doff merek Owndays. Dilengkapi kotak kacamata kulit sintetis warna abu-abu bertuliskan merk.">
+                            <div class="card-img-placeholder">
+                                <i class="bi bi-eyeglasses"></i>
+                                <span class="badge-status badge-temuan">DITEMUKAN</span>
+                                <div class="card-hover-hint">
+                                    <i class="bi bi-eye-fill"></i> Klik untuk melihat deskripsi
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title fw-bold text-truncate mb-1">Kacamata Minus Frame</h5>
+                                <p class="card-text text-muted small mb-3">
+                                    <i class="bi bi-geo-alt-fill text-success me-1"></i> Kantin Pusat Kasir
+                                </p>
+                                <div class="d-flex justify-content-between align-items-center border-top pt-3">
+                                    <span class="text-muted small"><i class="bi bi-clock me-1"></i>Siang ini</span>
+                                    <span class="badge bg-info text-dark rounded-pill">Di Kasir</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            
+        </div>
+    </div>
+
+    <!-- Modal Detail & Deskripsi Barang -->
+    <div class="modal fade" id="itemDetailModal" tabindex="-1" aria-labelledby="modalItemTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content border-0 rounded-4 shadow-lg overflow-hidden">
+                <!-- Modal Header -->
+                <div class="modal-header border-0 pb-2 pt-4 px-4 align-items-start">
+                    <div class="d-flex align-items-center gap-3">
+                        <div id="modalIconBox" class="rounded-4 d-flex align-items-center justify-content-center bg-primary-subtle text-primary shadow-sm" style="width: 58px; height: 58px; font-size: 1.8rem; min-width: 58px;">
+                            <i id="modalItemIcon" class="bi bi-box-seam"></i>
+                        </div>
+                        <div>
+                            <div class="d-flex align-items-center gap-2 mb-1 flex-wrap">
+                                <span id="modalItemTypeBadge" class="badge rounded-pill px-3 py-1 fw-bold">HILANG</span>
+                                <span id="modalItemCategory" class="badge bg-light text-secondary rounded-pill px-3 py-1 border fw-semibold">Kategori</span>
+                                <span id="modalItemId" class="text-muted small" style="font-size: 0.75rem;">#LH-2026-001</span>
+                            </div>
+                            <h4 class="modal-title fw-bold text-dark mb-0" id="modalItemTitle">Nama Barang</h4>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+
+                <!-- Modal Body -->
+                <div class="modal-body p-4">
+                    <!-- Meta Info Grid -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-sm-6">
+                            <div class="modal-info-box h-100">
+                                <div class="text-muted small fw-semibold mb-1">
+                                    <i class="bi bi-geo-alt-fill text-danger me-1"></i> Lokasi Kejadian / Temuan
+                                </div>
+                                <div class="fw-semibold text-dark" id="modalItemLocation">-</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="modal-info-box h-100">
+                                <div class="text-muted small fw-semibold mb-1">
+                                    <i class="bi bi-clock-history text-primary me-1"></i> Waktu Pelaporan
+                                </div>
+                                <div class="fw-semibold text-dark" id="modalItemTime">-</div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="modal-info-box h-100">
+                                <div class="text-muted small fw-semibold mb-1">
+                                    <i class="bi bi-shield-check text-success me-1"></i> Status Laporan
+                                </div>
+                                <div>
+                                    <span id="modalItemStatusBadge" class="badge rounded-pill px-3 py-1 fw-semibold">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="modal-info-box h-100">
+                                <div class="text-muted small fw-semibold mb-1">
+                                    <i class="bi bi-person-fill text-info me-1"></i> Pelapor / Sumber Informasi
+                                </div>
+                                <div class="fw-semibold text-dark" id="modalItemReporter">-</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Box Deskripsi Barang -->
+                    <div class="modal-desc-box mb-3">
+                        <h6 class="fw-bold text-primary mb-2 d-flex align-items-center gap-2">
+                            <i class="bi bi-card-text fs-5"></i> Deskripsi &amp; Ciri-Ciri Fisik Barang
+                        </h6>
+                        <p class="mb-0 text-dark" id="modalItemDescription" style="line-height: 1.65; font-size: 0.96rem;">
+                            Deskripsi barang akan muncul di sini...
+                        </p>
+                    </div>
+
+                    <!-- Catatan Verifikasi Keamanan -->
+                    <div class="p-3 bg-light rounded-3 border d-flex align-items-start gap-2 text-muted small">
+                        <i class="bi bi-shield-lock-fill text-primary fs-5 mt-1"></i>
+                        <div>
+                            <strong class="text-dark">Tips Keamanan:</strong> Untuk klaim barang berharga, pemilik wajib menunjukkan bukti identitas resmi (KTM / KTP) serta dapat menyebutkan ciri khas barang saat proses verifikasi di pos pengamanan kampus.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="modal-footer bg-light border-0 px-4 py-3 d-flex justify-content-between">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">
+                        Tutup
+                    </button>
+                    <div class="d-flex gap-2">
+                        <a id="modalItemActionBtn" href="/lapor" class="btn btn-primary rounded-pill px-4 fw-semibold shadow-sm d-flex align-items-center gap-2">
+                            <i class="bi bi-send-check"></i> <span id="modalItemActionBtnText">Saya Menemukan Ini</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        // Modal Instance Holder
+        let detailModalInstance = null;
+
+        // Function to open and populate the Detail Modal
+        function openDetailModal(cardElement) {
+            if (!detailModalInstance) {
+                const modalEl = document.getElementById('itemDetailModal');
+                detailModalInstance = new bootstrap.Modal(modalEl);
+            }
+
+            // Extract data attributes
+            const id = cardElement.getAttribute('data-id') || '-';
+            const type = cardElement.getAttribute('data-type') || 'INFORMASI';
+            const typeClass = cardElement.getAttribute('data-type-class') || 'bg-secondary';
+            const category = cardElement.getAttribute('data-category') || 'Umum';
+            const title = cardElement.getAttribute('data-title') || 'Detail Barang';
+            const icon = cardElement.getAttribute('data-icon') || 'bi-box-seam';
+            const location = cardElement.getAttribute('data-location') || '-';
+            const time = cardElement.getAttribute('data-time') || '-';
+            const status = cardElement.getAttribute('data-status') || '-';
+            const statusClass = cardElement.getAttribute('data-status-class') || 'bg-light text-dark';
+            const reporter = cardElement.getAttribute('data-reporter') || '-';
+            const description = cardElement.getAttribute('data-description') || 'Tidak ada deskripsi tambahan.';
+
+            // Populate Modal Elements
+            document.getElementById('modalItemId').textContent = '#' + id;
+            document.getElementById('modalItemTitle').textContent = title;
+            document.getElementById('modalItemCategory').textContent = category;
+            document.getElementById('modalItemLocation').textContent = location;
+            document.getElementById('modalItemTime').textContent = time;
+            document.getElementById('modalItemReporter').textContent = reporter;
+            document.getElementById('modalItemDescription').textContent = description;
+
+            // Type Badge
+            const typeBadge = document.getElementById('modalItemTypeBadge');
+            typeBadge.textContent = type;
+            typeBadge.className = 'badge rounded-pill px-3 py-1 fw-bold ' + (type === 'HILANG' ? 'badge-hilang' : 'badge-temuan');
+
+            // Status Badge
+            const statusBadge = document.getElementById('modalItemStatusBadge');
+            statusBadge.textContent = status;
+            statusBadge.className = 'badge rounded-pill px-3 py-1 fw-semibold ' + statusClass;
+
+            // Icon
+            const iconEl = document.getElementById('modalItemIcon');
+            iconEl.className = 'bi ' + icon;
+
+            // Action Button Text & Destination
+            const actionBtn = document.getElementById('modalItemActionBtn');
+            const actionBtnText = document.getElementById('modalItemActionBtnText');
+
+            if (type === 'HILANG') {
+                actionBtnText.textContent = 'Saya Menemukan Barang Ini';
+                actionBtn.href = '/lapor';
+                actionBtn.className = 'btn btn-success rounded-pill px-4 fw-semibold shadow-sm d-flex align-items-center gap-2';
+            } else {
+                actionBtnText.textContent = 'Ajukan Klaim Kepemilikan';
+                actionBtn.className = 'btn btn-primary rounded-pill px-4 fw-semibold shadow-sm d-flex align-items-center gap-2';
+            }
+
+            const previewParams = new URLSearchParams({
+                mode: type === 'HILANG' ? 'found' : 'claim',
+                id,
+                title,
+                category,
+                location,
+                time,
+                status,
+                reporter,
+                description
+            });
+            actionBtn.href = '/preview-aksi?' + previewParams.toString();
+
+            // Show Modal
+            detailModalInstance.show();
+        }
+
+        // Keyboard accessibility for cards
+        document.querySelectorAll('.item-card').forEach(card => {
+            card.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    openDetailModal(this);
+                }
+            });
+        });
+
+        // Live Real-Time Search Filter
+        const searchInput = document.querySelector('.search-box input');
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const keyword = this.value.toLowerCase().trim();
+                const allCols = document.querySelectorAll('.card-item-col');
+                
+                allCols.forEach(col => {
+                    const card = col.querySelector('.item-card');
+                    if (!card) return;
+                    
+                    const title = (card.getAttribute('data-title') || '').toLowerCase();
+                    const location = (card.getAttribute('data-location') || '').toLowerCase();
+                    const desc = (card.getAttribute('data-description') || '').toLowerCase();
+                    const category = (card.getAttribute('data-category') || '').toLowerCase();
+
+                    if (keyword === '' || title.includes(keyword) || location.includes(keyword) || desc.includes(keyword) || category.includes(keyword)) {
+                        col.style.display = '';
+                    } else {
+                        col.style.display = 'none';
+                    }
+                });
+            });
+        }
+    </script>
+</body>
+</html>

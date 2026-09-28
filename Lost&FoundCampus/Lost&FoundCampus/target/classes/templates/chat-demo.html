@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Verifikasi - CampusFound</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root { --blue: #126bfa; --ink: #182335; --muted: #657286; --line: #e0e7f0; }
+        body { min-height: 100vh; margin: 0; background: linear-gradient(145deg, #eaf1ff, #f7f9fc 55%, #e6f4f1); color: var(--ink); font-family: 'Inter', sans-serif; }
+        .topbar { min-height: 72px; padding: 16px max(20px, calc((100% - 1080px) / 2)); background: #fff; border-bottom: 1px solid var(--line); }
+        .brand { color: var(--blue); font: 800 1.25rem 'Outfit', sans-serif; text-decoration: none; }
+        .page { width: min(100% - 32px, 820px); margin: 36px auto; }
+        h1, h2 { font-family: 'Outfit', sans-serif; letter-spacing: 0; }
+        .chat-panel { overflow: hidden; border: 1px solid var(--line); border-radius: 14px; background: #fff; box-shadow: 0 18px 44px rgba(31, 54, 87, .1); }
+        .chat-header { padding: 22px 26px; border-bottom: 1px solid var(--line); }
+        .thread { min-height: 310px; max-height: 48vh; overflow-y: auto; padding: 22px; background: #f7f9fc; }
+        .message { width: fit-content; max-width: min(82%, 560px); margin-bottom: 12px; padding: 11px 14px; border: 1px solid var(--line); border-radius: 13px 13px 13px 3px; background: #fff; white-space: pre-wrap; overflow-wrap: anywhere; }
+        .message.is-self { margin-left: auto; border-color: #c9ddff; border-radius: 13px 13px 3px 13px; background: #eaf2ff; }
+        .message-meta { margin-bottom: 4px; color: var(--muted); font-size: .73rem; font-weight: 700; }
+        .empty-state { margin: 80px 0; color: var(--muted); text-align: center; }
+        .chat-compose { padding: 20px 22px; border-top: 1px solid var(--line); }
+        .chat-compose textarea { min-height: 88px; resize: vertical; }
+        .role-switch .btn-check:checked + .btn { color: #fff; background: var(--blue); border-color: var(--blue); }
+        @media (max-width: 575px) { .page { margin: 22px auto; } .chat-header { padding: 20px 18px; } .thread { min-height: 260px; padding: 16px; } .chat-compose { padding: 16px; } }
+    </style>
+</head>
+
+<body>
+    <header class="topbar">
+        <a class="brand" href="/">CampusFound</a>
+    </header>
+
+    <main class="page">
+        <a href="/" class="small text-decoration-none text-secondary"><i class="bi bi-arrow-left me-1"></i>Kembali ke daftar barang</a>
+
+        <section class="chat-panel mt-3">
+            <div class="chat-header">
+                <div class="d-flex flex-wrap justify-content-between align-items-start gap-3">
+                    <div>
+                        <div class="d-flex align-items-center gap-2 mb-2">
+                            <span class="badge text-bg-warning">SIMULASI</span>
+                            <span class="small text-secondary" th:text="${itemId}">ID Barang</span>
+                        </div>
+                        <h1 class="h3 fw-bold mb-1">Chat verifikasi barang</h1>
+                        <div class="text-secondary"><span th:text="${itemTitle}">Nama barang</span> <span aria-hidden="true">·</span> <span th:text="${itemLocation}">Lokasi</span></div>
+                    </div>
+                    <div class="role-switch btn-group" role="group" aria-label="Peran simulasi">
+                        <input class="btn-check" type="radio" name="chatRole" id="roleFinder" value="Penemu" autocomplete="off" th:checked="${mode == 'found'}">
+                        <label class="btn btn-outline-primary" for="roleFinder">Penemu</label>
+                        <input class="btn-check" type="radio" name="chatRole" id="roleSeeker" value="Pencari" autocomplete="off" th:checked="${mode == 'claim'}">
+                        <label class="btn btn-outline-primary" for="roleSeeker">Pencari</label>
+                    </div>
+                </div>
+                <div class="alert alert-info py-2 px-3 mt-3 mb-0 small" role="note">
+                    Chat ini hanya simulasi setelah persetujuan klaim. Pesan tersimpan di browser ini, bukan di server atau perangkat pengguna lain. Jangan kirim nomor telepon, kata sandi, atau foto identitas.
+                </div>
+            </div>
+
+            <div id="messageThread" class="thread" aria-live="polite" aria-label="Riwayat percakapan">
+                <div id="emptyState" class="empty-state">Belum ada pesan. Mulai verifikasi dengan menjelaskan ciri umum barang.</div>
+            </div>
+
+            <form id="chatForm" class="chat-compose">
+                <label for="messageInput" class="form-label fw-semibold">Pesan sebagai <span id="currentRole">Penemu</span></label>
+                <div class="d-flex flex-column flex-sm-row gap-2 align-items-sm-end">
+                    <textarea id="messageInput" class="form-control" maxlength="1000" placeholder="Tulis pesan tentang barang ini..." required></textarea>
+                    <button class="btn btn-primary rounded-pill px-4 py-2 fw-semibold text-nowrap" type="submit"><i class="bi bi-send-fill me-1"></i>Kirim</button>
+                </div>
+                <div class="form-text">Maksimal 1.000 karakter.</div>
+            </form>
+        </section>
+    </main>
+
+    <script th:inline="javascript">
+        const storageKey = 'campusfound-chat-' + /*[[${itemId}]]*/ 'demo-item';
+        const thread = document.getElementById('messageThread');
+        const emptyState = document.getElementById('emptyState');
+        const messageInput = document.getElementById('messageInput');
+        const currentRoleLabel = document.getElementById('currentRole');
+        const roleInputs = document.querySelectorAll('input[name="chatRole"]');
+        let currentRole = document.querySelector('input[name="chatRole"]:checked').value;
+        currentRoleLabel.textContent = currentRole;
+        let messages = [];
+
+        try {
+            messages = JSON.parse(localStorage.getItem(storageKey) || '[]');
+            if (!Array.isArray(messages)) messages = [];
+        } catch {
+            messages = [];
+        }
+
+        function renderMessages() {
+            thread.querySelectorAll('.message').forEach(message => message.remove());
+            emptyState.classList.toggle('d-none', messages.length > 0);
+
+            messages.forEach(message => {
+                const bubble = document.createElement('div');
+                bubble.className = 'message' + (message.sender === currentRole ? ' is-self' : '');
+                const meta = document.createElement('div');
+                meta.className = 'message-meta';
+                meta.textContent = message.sender + ' · ' + new Date(message.sentAt).toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' });
+                const body = document.createElement('div');
+                body.textContent = message.text;
+                bubble.append(meta, body);
+                thread.appendChild(bubble);
+            });
+            thread.scrollTop = thread.scrollHeight;
+        }
+
+        roleInputs.forEach(input => input.addEventListener('change', () => {
+            currentRole = input.value;
+            currentRoleLabel.textContent = currentRole;
+            renderMessages();
+        }));
+
+        document.getElementById('chatForm').addEventListener('submit', event => {
+            event.preventDefault();
+            const text = messageInput.value.trim();
+            if (!text) return;
+            messages.push({ sender: currentRole, text, sentAt: new Date().toISOString() });
+            localStorage.setItem(storageKey, JSON.stringify(messages));
+            messageInput.value = '';
+            renderMessages();
+            messageInput.focus();
+        });
+
+        renderMessages();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="id" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar - CampusFound</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { min-height: 100vh; margin: 0; padding: 36px 16px; display: grid; place-items: center; background: linear-gradient(145deg, #e6efff, #f7f9fc 54%, #e6f4f1); color: #182335; font-family: 'Inter', sans-serif; }
+        .register-shell { width: min(100%, 720px); }
+        .brand { color: #126bfa; font: 800 1.3rem 'Outfit', sans-serif; text-decoration: none; }
+        .form-panel { margin-top: 18px; padding: clamp(24px, 5vw, 42px); border: 1px solid #e4eaf2; border-radius: 16px; background: #fff; box-shadow: 0 20px 55px rgba(28, 55, 95, .1); }
+        h1 { font: 700 2rem 'Outfit', sans-serif; letter-spacing: 0; }
+        .form-label { font-size: .9rem; font-weight: 600; }
+        .form-control, .form-select { min-height: 46px; border-color: #dce3ed; }
+        .form-control:focus, .form-select:focus { border-color: #126bfa; box-shadow: 0 0 0 .2rem rgba(18, 107, 250, .14); }
+        .submit-button { min-height: 48px; background: #126bfa; border: 0; font-weight: 700; }
+        .submit-button:hover { background: #0956cf; }
+        @media (max-width: 575px) { body { padding: 20px 12px; } h1 { font-size: 1.7rem; } }
+    </style>
+</head>
+
+<body>
+    <main class="register-shell">
+        <a class="brand" href="/">CampusFound</a>
+        <section class="form-panel">
+            <h1 class="mb-1">Buat akun pelapor</h1>
+            <p class="text-secondary mb-4">Daftar untuk membuat laporan dan membantu menemukan barang di kampus.</p>
+
+            <div th:if="${errorMessage}" class="alert alert-danger" role="alert" th:text="${errorMessage}"></div>
+
+            <form action="/register" method="post">
+                <div class="row g-3">
+                    <div class="col-12">
+                        <label for="fullName" class="form-label">Nama lengkap</label>
+                        <input id="fullName" name="fullName" class="form-control" autocomplete="name" required maxlength="100" th:value="${fullName}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="email" class="form-label">Email</label>
+                        <input id="email" name="email" type="email" class="form-control" autocomplete="email" required maxlength="150" th:value="${email}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="whatsapp" class="form-label">Nomor WhatsApp</label>
+                        <input id="whatsapp" name="whatsapp" type="tel" class="form-control" placeholder="08xx atau +628xx" autocomplete="tel" required th:value="${whatsapp}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="reporterType" class="form-label">Tipe pelapor</label>
+                        <select id="reporterType" name="reporterType" class="form-select" required>
+                            <option value="" disabled th:selected="${reporterType == null}">Pilih tipe pelapor</option>
+                            <option value="mahasiswa" th:selected="${reporterType == 'mahasiswa'}">Mahasiswa</option>
+                            <option value="dosen" th:selected="${reporterType == 'dosen'}">Dosen</option>
+                            <option value="tendik" th:selected="${reporterType == 'tendik'}">Tenaga kependidikan</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="studentNumber" class="form-label">Nomor induk (NIM/NIP/NIK)</label>
+                        <input id="studentNumber" name="studentNumber" class="form-control" required maxlength="30" th:value="${studentNumber}">
+                    </div>
+                    <div class="col-12">
+                        <label for="unit" class="form-label">Unit asal</label>
+                        <input id="unit" name="unit" class="form-control" placeholder="Fakultas, program studi, atau unit kerja" required maxlength="150" th:value="${unit}">
+                    </div>
+                    <div class="col-md-6">
+                        <label for="password" class="form-label">Kata sandi</label>
+                        <input id="password" name="password" type="password" class="form-control" autocomplete="new-password" minlength="8" required>
+                        <div class="form-text">Minimal 8 karakter, berisi huruf dan angka.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="confirmPassword" class="form-label">Konfirmasi kata sandi</label>
+                        <input id="confirmPassword" name="confirmPassword" type="password" class="form-control" autocomplete="new-password" minlength="8" required>
+                    </div>
+                    <div class="col-12 mt-4">
+                        <button class="btn btn-primary submit-button w-100" type="submit">Buat akun</button>
+                    </div>
+                </div>
+            </form>
+
+            <p class="text-center text-secondary mt-4 mb-0">Sudah punya akun? <a href="/login" class="fw-semibold text-decoration-none">Masuk</a></p>
+        </section>
+    </main>
+</body>
+
+</html>

@@ -1,0 +1,8 @@
+com\lostfound\campus\model\Pelapor.class
+com\lostfound\campus\LostAndFoundApplication.class
+com\lostfound\campus\service\RegistrationService.class
+com\lostfound\campus\repository\PelaporRepository.class
+com\lostfound\campus\controller\UIController.class
+com\lostfound\campus\config\SecurityConfig.class
+com\lostfound\campus\model\Pengguna.class
+com\lostfound\campus\repository\PenggunaRepository.class
